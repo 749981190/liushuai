@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<style type="text/css">
+			*{
+            margin: 0;
+            padding: 0;
+        }
+        #con{
+            width: 800px;
+            height: 500px;
+            border: darkgrey solid 2px;
+            position: relative;
+            background-color: pink;
+
+        }
+        #con div{
+            display: inline-block;
+            width: 200px;
+            text-align: center;
+            min-height: 90px;
+            border: solid 1px red;
+        }
+        #con p{
+            width: 100%;
+            min-height: 30px;
+            border-bottom: solid 1px greenyellow;
+        }
+        .del,.ok{
+        	cursor: pointer;
+        }
+		</style>
+	</head>
+	<body>
+		<input type="text" id=""placeholder="请输入愿望" />
+		<button id="add">点击提交</button>
+		<div id="con">
+			
+		</div>
+	</body>
+	<script src="ajax_v2.js" type="text/javascript" charset="utf-8"></script>
+	<script src="jquery-1.11.1.min.js" type="text/javascript" charset="utf-8"></script>
+	<script>
+		//添加
+	    $("#add").click(function(){
+	    	$.post("http://localhost:8080/add",{
+	    		yw:$("input").val(),
+	    		color:"0"
+	    	},(data)=>{
+	    		console.log(data)
+	    		getData()
+	    		$("input").val("")
+	    	})
+	    })
+	    
+	    //渲染
+	    
+	    function getData(){
+	    	$.get("http://localhost:8080/get",{limit:8},(data)=>{
+	    		console.log("data:",data)
+	    		let str="";
+	    		for (var i = 0; i < data.length; i++) {
+	    			str+=`
+	    			<div>
+	                    <p class="del" _id=${data[i]._id}>删除</p>
+	                    <p>${data[i].yw}</p>
+	                    <p class="ok" count=${JSON.stringify(data[i])}>√</p>
+	                </div>
+	    			`
+	    		}
+	    		$("#con").html(str);
+	    		$("#con>div").each(function(item,index){
+	    			$(this).css({
+	    				position:"absolute",
+	    				top:suiji(410,10),
+	    				left:suiji(600,10)
+	    			})
+	    		})
+	    		 for (let i = 0; i <data.length ; i++) {
+	                if(data[i].color == 1){
+	                    $("#con").children().eq(i).css("background","purple")
+	                }
+	            }
+	    	})
+	    }
+	    getData()
+	    
+	    //删除
+	    $("#con").on("click",".del",function(){
+	    	let id=$(this).attr("_id");
+	    	$.post("http://localhost:8080/del",{id:id},(data)=>{
+	    		getData();//回显页面
+	    	})
+	    })
+	    
+	    //选中变色
+	    
+	    $("#con").on("click",".ok",function(){
+	    	let obj=JSON.parse($(this).attr("count"))
+	    	$.post("http://localhost:8080/ok",obj,(data)=>{
+	    		getData()
+	    	})
+	    })
+	    
+	    
+	    //随机获取
+	      function suiji(max,min){
+	        return parseInt(Math.random()*(max-min)+min)
+	    }
+	</script>
+</html>
